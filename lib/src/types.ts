@@ -1,11 +1,11 @@
-import conf from "msal/lib-commonjs/Configuration";
-import msal from "msal";
+import * as conf from "@azure/msal-browser/dist/src/config/Configuration";
+import * as msal from "@azure/msal-common";
 
 export type CacheOptions = conf.CacheOptions;
 export type AuthError = msal.AuthError;
-export type AuthResponse = msal.AuthResponse;
-export type SystemOptions = conf.SystemOptions;
-export type Account = msal.Account;
+export type AuthResponse = msal.AuthenticationResult;
+export type SystemOptions = conf.BrowserSystemOptions;
+export type Account = msal.AccountInfo;
 
 export type DataObject = {
     isAuthenticated: boolean,
@@ -13,7 +13,7 @@ export type DataObject = {
     idToken: string,
     user: User,
     custom: object,
-    account?: msal.Account
+    account?: msal.AccountInfo
 }
 
 export type FrameworkOptions = {
@@ -32,7 +32,7 @@ export type Options = {
 
 export type Request = {
     scopes?: string[]
-    account? : msal.Account
+    account? : msal.AccountInfo
 }
 
 // Config object to be passed to Msal on creation.
@@ -53,7 +53,8 @@ export interface iMSAL {
     signIn: () => Promise<any> | void,
     signOut: () => Promise<any> | void,
     acquireToken: () => Promise<any> | void,
-    isAuthenticated: () => boolean
+    isAuthenticated: () => boolean,
+    getCurrentAccount: () => undefined | msal.AccountInfo
 }
 
 export type User = {

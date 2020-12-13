@@ -12,13 +12,12 @@ export class MSAL implements iMSAL {
         user: { name: '', userName: ''},
         custom: {},
         account: {
-            accountIdentifier: "",
-            homeAccountIdentifier: "",
-            userName: "",
+            localAccountId: "",
+            homeAccountId: "",
+            tenantId: "",
+            username: "",
             name: "",
-            idToken: {},
             idTokenClaims: {},
-            sid: "",
             environment: "",
         }
     };
@@ -61,7 +60,23 @@ export class MSAL implements iMSAL {
             cache: this.cache
         }
         this.msalLibrary = new msal.PublicClientApplication(config);
-        this.signIn()
+
+        this.data.isAuthenticated = this.isAuthenticated();
+        if (this.data.isAuthenticated) {
+            const currentAccounts = this.msalLibrary.getAllAccounts();
+            console.log(currentAccounts);
+            if (currentAccounts === null) {
+                return;
+            } else if (currentAccounts.length > 1) {
+                // Add choose account code here
+                console.warn("Multiple accounts detected.");
+            } else if (currentAccounts.length === 1) {
+                this.data.user.userName = currentAccounts[0].username;
+                this.data.user.name = currentAccounts[0].name;
+                this.data.account = currentAccounts[0];
+            }
+            this.acquireToken();
+        }
     }
     signIn() {
         return this.msalLibrary.loginPopup(this.loginRequest).then(loginResponse => {
@@ -81,7 +96,8 @@ export class MSAL implements iMSAL {
                     // Add choose account code here
                 } else if (currentAccounts.length === 1) {
                     this.data.user.userName = currentAccounts[0].username;
-                    this.data.user.userName = currentAccounts[0].name;
+                    this.data.user.name = currentAccounts[0].name;
+                    this.data.account = currentAccounts[0];
                     console.log('this.data: ');
                     console.log(this.data);
                 }
@@ -132,17 +148,20 @@ export class MSAL implements iMSAL {
             return true
         }
     }
+    getCurrentAccount() {
+        return this.data.account;
+    }
     private handleTokenResponse(error, response) {
         if (error) {
             return;
         }
         if(this.data.accessToken !== response.accessToken) {
             this.setToken('accessToken', response.accessToken, response.expiresOn, response.scopes);
-            console.log('got new accessToken: ' + response.accessToken)
+            console.log('got new accessToken')
         }
         if(this.data.idToken !== response.idToken.rawIdToken) {
             this.setToken('idToken', response.idToken.rawIdToken, new Date(response.idToken.expiration * 1000), [this.auth.clientId]);
-            console.log('got new idToken: ' + response.idToken.rawIdToken)
+            console.log('got new idToken')
         }
     }
     private setToken(tokenType:string, token: string, expiresOn: Date, scopes: string[]) {
@@ -155,12 +174,12 @@ export class MSAL implements iMSAL {
         }
         if (this.tokenExpirationTimers[tokenType]) clearTimeout(this.tokenExpirationTimers[tokenType]);
         this.tokenExpirationTimers[tokenType] = window.setTimeout(async () => {
-            console.log('auto refreshing token: ' + this.auth.autoRefreshToken)
+            console.log('auto refreshing token')
             if (this.auth.autoRefreshToken) {
                 await this.acquireToken({ scopes }, 3);
             } else {
                 this.data[tokenType] = '';
-                console.log('setting token to none:' + this.data.accessToken)
+                console.log('setting token to none')
             }
         }, expiration)
     }
