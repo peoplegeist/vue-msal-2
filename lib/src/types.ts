@@ -55,6 +55,7 @@ export interface iMSAL {
     acquireToken: () => Promise<any> | void,
     isAuthenticated: () => boolean,
     getCurrentAccount: () => undefined | msal.AccountInfo
+    getOrganization: () => Promise<any> | void
 }
 
 export type User = {

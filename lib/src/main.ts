@@ -3,6 +3,7 @@ import * as msal from "@azure/msal-browser";
 import { iMSAL, DataObject, Options, Auth, CacheOptions, Request } from './types';
 
 export class MSAL implements iMSAL {
+    private graphEndpoint: string = 'https://graph.microsoft.com/v1.0/';
     private msalLibrary: any;
     private tokenExpirationTimers: {[key: string]: undefined | number} = {};
     public data: DataObject = {
@@ -150,6 +151,46 @@ export class MSAL implements iMSAL {
     }
     getCurrentAccount() {
         return this.data.account;
+    }
+    async getOrganization() {
+        if(this.data.isAuthenticated) {
+            let self = this;
+            return new Promise(function (resolve, reject) {
+                const headers = new Headers();
+                const bearer = `Bearer ${self.data.accessToken}`;
+                
+                headers.append("Authorization", bearer);
+                
+                const options = {
+                    method: "GET",
+                    headers: headers
+                };
+                
+                console.log('request made to Graph API at: ' + new Date().toString());
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', self.graphEndpoint + 'organization')
+                xhr.setRequestHeader('Authorization', `Bearer ${self.data.accessToken}`)
+                xhr.onload = function () {
+                    if (this.status >= 200 && this.status < 300) {
+                      resolve(JSON.parse(xhr.responseText));
+                    } else {
+                      reject({
+                        status: this.status,
+                        statusText: xhr.statusText
+                      });
+                    }
+                };
+                xhr.onerror = function () {
+                    reject({
+                      status: this.status,
+                      statusText: xhr.statusText
+                    });
+                };
+                xhr.send();
+            });
+        } else {
+            return null;
+        }
     }
     private handleTokenResponse(error, response) {
         if (error) {
