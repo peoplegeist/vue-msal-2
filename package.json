@@ -1,6 +1,6 @@
 {
   "name": "@peoplegeist/vue-msal-2",
-  "version": "1.0.4n",
+  "version": "1.0.4",
   "description": "Vue plugin for using Microsoft Authentication Library (MSAL 2.0) (forked from vue-msal Marios Vertopoulos, Yoeran Kaniok)",
   "main": "dist/plugin.js",
   "scripts": {
