@@ -43,6 +43,7 @@ export type Auth = {
     authority: string,
     redirectUri: string,
     autoRefreshToken?: boolean,
+    requireAuthOnInitialize?: boolean,
     onAuthentication: (ctx: object, error: AuthError, response: AuthResponse) => any,
     onToken: (ctx: object, error: AuthError | null, response: AuthResponse | null) => any,
     beforeSignOut: (ctx: object) => any

@@ -62,21 +62,23 @@ export class MSAL implements iMSAL {
         }
         this.msalLibrary = new msal.PublicClientApplication(config);
 
-        this.data.isAuthenticated = this.isAuthenticated();
-        if (this.data.isAuthenticated) {
-            const currentAccounts = this.msalLibrary.getAllAccounts();
-            console.log(currentAccounts);
-            if (currentAccounts === null) {
-                return;
-            } else if (currentAccounts.length > 1) {
-                // Add choose account code here
-                console.warn("Multiple accounts detected.");
-            } else if (currentAccounts.length === 1) {
-                this.data.user.userName = currentAccounts[0].username;
-                this.data.user.name = currentAccounts[0].name;
-                this.data.account = currentAccounts[0];
+        if(this.auth.requireAuthOnInitialize) {
+            this.data.isAuthenticated = this.isAuthenticated();
+            if (this.data.isAuthenticated) {
+                const currentAccounts = this.msalLibrary.getAllAccounts();
+                console.log(currentAccounts);
+                if (currentAccounts === null) {
+                    return;
+                } else if (currentAccounts.length > 1) {
+                    // Add choose account code here
+                    console.warn("Multiple accounts detected.");
+                } else if (currentAccounts.length === 1) {
+                    this.data.user.userName = currentAccounts[0].username;
+                    this.data.user.name = currentAccounts[0].name;
+                    this.data.account = currentAccounts[0];
+                }
+                this.acquireToken();
             }
-            this.acquireToken();
         }
     }
     signIn() {
