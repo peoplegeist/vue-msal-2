@@ -42,6 +42,10 @@ export class MSAL implements iMSAL {
         scopes: ["openid", "profile", "User.Read"]
     };
 
+    private loginUserSync: Request = {
+        scopes: ["openid", "profile", "User.Read.All", "offline_access"]
+    };
+
     // Add here scopes for access token to be used at MS Graph API endpoints.
     private tokenRequest: Request = {
         scopes: ["User.Read"]
@@ -81,8 +85,10 @@ export class MSAL implements iMSAL {
             }
         }
     }
-    signIn() {
-        return this.msalLibrary.loginPopup(this.loginRequest).then(loginResponse => {
+    signIn(option?: { userSync: boolean }) {
+        const loginRequest = option?.userSync ? this.loginUserSync : this.loginRequest;
+
+        return this.msalLibrary.loginPopup(loginRequest).then(loginResponse => {
             if (loginResponse !== null) {
                 this.data.user.userName = loginResponse.account.username;
                 this.data.accessToken = loginResponse.accessToken;

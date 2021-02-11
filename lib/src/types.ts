@@ -51,7 +51,7 @@ export type Auth = {
 
 export interface iMSAL {
     data: DataObject,
-    signIn: () => Promise<any> | void,
+    signIn: (option?: { userSync: boolean }) => Promise<any> | void,
     signOut: () => Promise<any> | void,
     acquireToken: () => Promise<any> | void,
     isAuthenticated: () => boolean,
