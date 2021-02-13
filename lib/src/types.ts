@@ -1,11 +1,6 @@
-import * as conf from "@azure/msal-browser/dist/src/config/Configuration";
-import * as msal from "@azure/msal-common";
-
-export type CacheOptions = conf.CacheOptions;
-export type AuthError = msal.AuthError;
-export type AuthResponse = msal.AuthenticationResult;
-export type SystemOptions = conf.BrowserSystemOptions;
-export type Account = msal.AccountInfo;
+//import * as conf from "@azure/msal-browser";
+import { CacheOptions, BrowserSystemOptions }  from "@azure/msal-browser";
+import { AuthError, AuthenticationResult, AccountInfo } from "@azure/msal-common";
 
 export type DataObject = {
     isAuthenticated: boolean,
@@ -13,7 +8,7 @@ export type DataObject = {
     idToken: string,
     user: User,
     custom: object,
-    account?: msal.AccountInfo
+    account?: AccountInfo
 }
 
 export type FrameworkOptions = {
@@ -26,13 +21,13 @@ export type Options = {
     loginRequest: Request,
     tokenRequest: Request,
     cache?: CacheOptions,
-    system?: SystemOptions,
+    system?: BrowserSystemOptions,
     framework?: FrameworkOptions
 }
 
 export type Request = {
     scopes?: string[]
-    account? : msal.AccountInfo
+    account? : AccountInfo
 }
 
 // Config object to be passed to Msal on creation.
@@ -44,18 +39,18 @@ export type Auth = {
     redirectUri: string,
     autoRefreshToken?: boolean,
     requireAuthOnInitialize?: boolean,
-    onAuthentication: (ctx: object, error: AuthError, response: AuthResponse) => any,
-    onToken: (ctx: object, error: AuthError | null, response: AuthResponse | null) => any,
+    onAuthentication: (ctx: object, error: AuthError, response: AuthenticationResult) => any,
+    onToken: (ctx: object, error: AuthError | null, response: AuthenticationResult | null) => any,
     beforeSignOut: (ctx: object) => any
 }
 
 export interface iMSAL {
     data: DataObject,
-    signIn: (option?: { userSync: boolean }) => Promise<any> | void,
+    signIn: () => Promise<any> | void,
     signOut: () => Promise<any> | void,
     acquireToken: () => Promise<any> | void,
     isAuthenticated: () => boolean,
-    getCurrentAccount: () => undefined | msal.AccountInfo
+    getCurrentAccount: () => undefined | AccountInfo
     getOrganization: () => Promise<any> | void
 }
 

@@ -1,6 +1,7 @@
-import * as msal from "@azure/msal-browser";
+//import * as msal from "@azure/msal-browser";
+import { CacheOptions, Configuration, PublicClientApplication, InteractionRequiredAuthError } from "@azure/msal-browser";
 
-import { iMSAL, DataObject, Options, Auth, CacheOptions, Request } from './types';
+import { iMSAL, DataObject, Options, Auth, Request } from './types';
 
 export class MSAL implements iMSAL {
     private graphEndpoint: string = 'https://graph.microsoft.com/v1.0/';
@@ -42,10 +43,6 @@ export class MSAL implements iMSAL {
         scopes: ["openid", "profile", "User.Read"]
     };
 
-    private loginUserSync: Request = {
-        scopes: ["openid", "profile", "User.Read.All", "offline_access"]
-    };
-
     // Add here scopes for access token to be used at MS Graph API endpoints.
     private tokenRequest: Request = {
         scopes: ["User.Read"]
@@ -60,11 +57,11 @@ export class MSAL implements iMSAL {
         this.loginRequest = Object.assign(this.loginRequest, options.loginRequest);
         this.tokenRequest = Object.assign(this.tokenRequest, options.tokenRequest);
         
-        const config: msal.Configuration = {
+        const config: Configuration = {
             auth: this.auth,
             cache: this.cache
         }
-        this.msalLibrary = new msal.PublicClientApplication(config);
+        this.msalLibrary = new PublicClientApplication(config);
 
         if(this.auth.requireAuthOnInitialize) {
             this.data.isAuthenticated = this.isAuthenticated();
@@ -85,10 +82,8 @@ export class MSAL implements iMSAL {
             }
         }
     }
-    signIn(option?: { userSync: boolean }) {
-        const loginRequest = option?.userSync ? this.loginUserSync : this.loginRequest;
-
-        return this.msalLibrary.loginPopup(loginRequest).then(loginResponse => {
+    signIn() {
+        return this.msalLibrary.loginPopup(this.loginRequest).then(loginResponse => {
             if (loginResponse !== null) {
                 this.data.user.userName = loginResponse.account.username;
                 this.data.accessToken = loginResponse.accessToken;
@@ -132,7 +127,7 @@ export class MSAL implements iMSAL {
             this.handleTokenResponse(null, response);
         } catch (error) {
             console.log("silent token acquisition fails.");
-            if (error instanceof msal.InteractionRequiredAuthError) {
+            if (error instanceof InteractionRequiredAuthError) {
                 console.log("acquiring token using popup");
                 return this.msalLibrary.acquireTokenPopup(request).catch(error => {
                     console.error(error);
